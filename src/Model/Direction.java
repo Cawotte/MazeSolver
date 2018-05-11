@@ -6,7 +6,7 @@ public enum Direction {
     RIGHT(0,1),
     LEFT(0,-1);
 
-    private int x,y;
+    public int x,y;
 
     Direction(int x, int y){
         this.x = x;

@@ -1,4 +1,4 @@
-package VueControleur;
+package ViewController;
 
 
 import Model.Maze;

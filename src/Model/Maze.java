@@ -9,7 +9,7 @@ public class Maze extends Observable {
     private int height;
     private int width;
 
-    private boolean enableGraphics;
+    private boolean enableGraphics = true;
 
     private Coord centralPos;
     private Coord playerPos;
@@ -23,11 +23,18 @@ public class Maze extends Observable {
 
 
     public Maze(int h, int w){
+
         this.height = h;
         this.width = w;
         this.maze = new int[width][height];
         this.centralPos = new Coord(width/2, height/2);
         this.playerPos = centralPos;
+
+        initMaze();
+
+    }
+
+    public void initMaze() {
 
         //On initialise toute les cases vide.
         for (int i = 0; i<this.height; i++)
@@ -37,13 +44,17 @@ public class Maze extends Observable {
         //We set the player at the central pos.
         maze[centralPos.x][centralPos.y] = 2;
 
-    }
+        if ( enableGraphics ) {
+            setChanged();
+            notifyObservers();
+        }
 
+    }
     /**
      * Initialize the labyrinth with obstacles, with the percentage given in argument, from 0 to 100.
      * @param obstacleRate
      */
-    public void initMaze(int obstacleRate) {
+    public void generateMaze(int obstacleRate) {
 
         Coord pos;
         Random rand = new Random();
@@ -52,10 +63,10 @@ public class Maze extends Observable {
         if ( obstacleRate <= 0 )
             return; //The maze stay empty
         else if ( obstacleRate >= 100 )
-            System.out.println("The given percentage is too high ! There can't be 100µ% or more obstacles !");
+            System.out.println("The given percentage is too high ! There can't be 100% or more obstacles !");
 
         //We count the number of obstacles to put in the maze
-        int nbObstacles = (height * width) * ( obstacleRate / 100 );
+        int  nbObstacles = (int) ((double)(height*width*obstacleRate) / 100d);
         //debug
         System.out.println("nbObstacles = " + nbObstacles + ", rate = " + obstacleRate + ", nb tiles = " + height * width);
 
@@ -64,11 +75,13 @@ public class Maze extends Observable {
             for (int j = 0; j<this.width; j++)
                 maze[i][j] = 0;
 
+        resetPlayerPos();
+
         //We now make a list of all possible coordonates and pick from them, with the exception of the central position, our starting point.
         ArrayList<Coord> possiblePos = new ArrayList<Coord>();
-        for ( int i = 0; i < height; i++)
-            for ( int j = 0; j < width; j++)
-                if ( i != width/2 && j != height/2 )
+        for ( int i = 0; i < width; i++)
+            for ( int j = 0; j < height; j++)
+                if ( i != width/2 || j != height/2 )
                     possiblePos.add(new Coord(i,j));
 
         //We now randomly pick Coords from the list and add obstacles to the maze, removing the one we are picking from the list to not select them again.
@@ -85,6 +98,9 @@ public class Maze extends Observable {
             notifyObservers();
         }
 
+        System.out.println("done");
+        //printMaze();
+
 
     }
 
@@ -93,20 +109,32 @@ public class Maze extends Observable {
      * Move the player/robot to the given direction. Return true if the move was possible and made, false otherwise.
      * @param dir Enum which is a couple of int determining the direction
      */
-    public boolean deplacer(Direction dir) {
+    public boolean move(Direction dir) {
 
         Coord newPos = new Coord(playerPos.x + dir.x , playerPos.y + dir.y);
         //Check if the movement is possible
-        if ( newPos.x >= width || newPos.x < 0 || newPos.y > height || newPos.y < 0)
+        if ( newPos.x >= width || newPos.x < 0 || newPos.y >= height || newPos.y < 0) {
+            //We got out of the maze, endgame.
+            setChanged();
+            notifyObservers(true);
+            return true;
+        }
+
+        //if there's an obstacle, nada
+        if (  maze[newPos.x][newPos.y] == 1 )
             return false;
 
         //if it's okay we proceed to the movement.
         maze[playerPos.x][playerPos.y] = 0;
         maze[newPos.x][newPos.y] = 2;
 
+        ArrayList<Coord> changedCases = new ArrayList<>();
+        changedCases.add(playerPos); changedCases.add(newPos);
+        playerPos = newPos;
+
         if ( enableGraphics ) {
             setChanged();
-            notifyObservers();
+            notifyObservers(changedCases);
         }
 
         return true;

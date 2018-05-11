@@ -1,4 +1,4 @@
-package VueControleur;
+package ViewController;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;

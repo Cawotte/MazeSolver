@@ -3,8 +3,8 @@ package View;
 import Model.Coord;
 import Model.Direction;
 import Model.Maze;
-import VueControleur.PopupFinPartie;
-import VueControleur.MazeGrid;
+import ViewController.PopupFinPartie;
+import ViewController.MazeGrid;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -12,16 +12,10 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
+import javafx.scene.text.*;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -29,13 +23,16 @@ import java.util.Observable;
 import java.util.Observer;
 
 
-public class VueControleurBlokus extends Application implements Observer {
+public class ViewMaze extends Application implements Observer {
 
 
-    private Maze maze = new Maze(20, 20);
+    private Maze maze;
 
+    private MazeGrid mazeView;
+    private int mazeViewWidth = 1100;
+    private int mazeViewHeight = 700;
 
-    private MazeGrid mazeView = new MazeGrid(20, 20, 30, false);
+    private int mazeSize = 40;
 
     private PopupFinPartie popupFinPartie;
 
@@ -55,7 +52,18 @@ public class VueControleurBlokus extends Application implements Observer {
     @Override
     public void start(Stage primaryStage){
 
+        maze = new Maze(mazeSize, mazeSize);
+
+        //int rectangleSize = ( (mazeViewWidth+mazeViewHeight) / 2 ) / 30;
+        double scaling =  20d / (double)mazeSize;
+        int rectangleSize = (int) (30 * scaling);
+
+        //ectangleSize = Math.min(   (int) ((double)mazeViewHeight / (double)mazeHeight),  (int) ((double)mazeViewWidth / (double)mazeWidth));
+        System.out.println("rect size =" + rectangleSize);
+        mazeView = new MazeGrid(mazeSize, mazeSize, rectangleSize, false);
+
         maze.addObserver(this);
+
 
         //------------------------------------------
         //----- POPUP VICTOIRE
@@ -95,7 +103,7 @@ public class VueControleurBlokus extends Application implements Observer {
 
         Button initMaze = new Button("Generate Maze");
         initMaze.setOnMouseClicked(event -> {
-            maze.initMaze(50);
+            maze.generateMaze(50);
         });
 
         initMaze.setPadding(new Insets(10));
@@ -113,8 +121,8 @@ public class VueControleurBlokus extends Application implements Observer {
 
         //region Maze Jeu
 
-        //Le centre est déjà initialisé quand on crée MazeGrid !
-        mazeView.getGridP().setGridLinesVisible(true);
+
+        //mazeView.getGridP().setGridLinesVisible(true);
         mazeView.getGridP().setPadding(new Insets(10, 0, 10, 20));
 
 
@@ -133,6 +141,8 @@ public class VueControleurBlokus extends Application implements Observer {
 
         Scene scene = new Scene(mazeView, 1100, 700);
 
+        movementEvents(scene);
+
         primaryStage.setOnCloseRequest(e -> Platform.exit());
         primaryStage.setTitle("MAZE");
         primaryStage.setScene(scene);
@@ -141,8 +151,6 @@ public class VueControleurBlokus extends Application implements Observer {
 
         //---------------------------------------------------------------------
         //----- EVENTS
-
-        movementEvents(scene);
 
     }
 
@@ -153,21 +161,26 @@ public class VueControleurBlokus extends Application implements Observer {
 
     private void movementEvents(Scene scene) {
 
-        scene.setOnKeyPressed(new EventHandler<KeyEvent>(){
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
             @Override
-            public void handle(KeyEvent key){
-                if (key.getCode().equals(KeyCode.UP)) {
-                    maze.deplacer( Direction.UP );
+            public void handle(KeyEvent key) {
+                Direction dir = null;
+                switch (key.getCode()) {
+                    case LEFT:
+                        dir = Direction.LEFT;
+                        break;
+                    case RIGHT:
+                        dir = Direction.RIGHT;
+                        break;
+                    case UP:
+                        dir = Direction.UP;
+                        break;
+                    case DOWN:
+                        dir = Direction.DOWN;
+                        break;
                 }
-                else if (key.getCode().equals(KeyCode.RIGHT)) {
-                    maze.deplacer( Direction.RIGHT );
-                }
-                else if (key.getCode().equals(KeyCode.DOWN)) {
-                    maze.deplacer( Direction.DOWN );
-                }
-                else if (key.getCode().equals(KeyCode.LEFT)) {
-                    maze.deplacer( Direction.LEFT );
-                }
+                if (dir != null)
+                    maze.move(dir);
             }
         });
     }
@@ -197,6 +210,12 @@ public class VueControleurBlokus extends Application implements Observer {
                     }
                 }
             }
+            else if ( arg instanceof Boolean ) {
+                if ( (boolean) arg ) {
+                    popupFinPartie.setTextPopup("You got out of the maze !");
+                    popupFinPartie.afficherPopup();
+                }
+            }
 
             else {
                 //Full refresh of the grid
@@ -221,6 +240,7 @@ public class VueControleurBlokus extends Application implements Observer {
             }
 
         }
+
 
 
     }
