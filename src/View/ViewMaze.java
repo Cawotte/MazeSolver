@@ -32,7 +32,7 @@ public class ViewMaze extends Application implements Observer {
     private int mazeViewWidth = 1100;
     private int mazeViewHeight = 700;
 
-    private int mazeSize = 40;
+    private int mazeSize = 41;
 
     private PopupFinPartie popupFinPartie;
 
@@ -103,7 +103,8 @@ public class ViewMaze extends Application implements Observer {
 
         Button initMaze = new Button("Generate Maze");
         initMaze.setOnMouseClicked(event -> {
-            maze.generateMaze(50);
+            //maze.generateMaze(50);
+            maze.generateMazeRecBac();
         });
 
         initMaze.setPadding(new Insets(10));
@@ -214,6 +215,20 @@ public class ViewMaze extends Application implements Observer {
                 if ( (boolean) arg ) {
                     popupFinPartie.setTextPopup("You got out of the maze !");
                     popupFinPartie.afficherPopup();
+                }
+            }
+            else if ( arg instanceof Coord ) {
+                Coord pos = (Coord)arg;
+                switch ( maze.getCase(pos.x,pos.y) ) {
+                    case 0:
+                        mazeView.getTab()[pos.x][pos.y].setFill(Color.WHITE);
+                        break;
+                    case 1:
+                        mazeView.getTab()[pos.x][pos.y].setFill(Color.RED);
+                        break;
+                    case 2:
+                        mazeView.getTab()[pos.x][pos.y].setFill(Color.BLUE);
+                        break;
                 }
             }
 

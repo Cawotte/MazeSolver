@@ -1,8 +1,6 @@
 package Model;
 
-import java.util.ArrayList;
-import java.util.Observable;
-import java.util.Random;
+import java.util.*;
 
 public class Maze extends Observable {
 
@@ -14,6 +12,7 @@ public class Maze extends Observable {
     private Coord centralPos;
     private Coord playerPos;
     private int[][] maze;
+
     /*
         La valeur de la case défini son contenu
         0 = vide
@@ -100,6 +99,75 @@ public class Maze extends Observable {
 
         System.out.println("done");
         //printMaze();
+
+
+    }
+
+    public void generateMazeRecBac() {
+
+        Random rand = new Random();
+
+        //We fill the maze with obstacles, we will dig the labyrinth out of it.
+        for (int i = 0; i<this.height; i++)
+            for (int j = 0; j<this.width; j++)
+                maze[i][j] = 1;
+
+        //We choose a random starting point
+        int x = rand.nextInt(width-1)+1;
+        int y = rand.nextInt(height-1)+1;
+        Coord startPos = new Coord(x - (1 - x%2),y - ( 1 - y%2));
+
+        Stack<Coord> stack = new Stack<>();
+
+        stack.push(startPos);
+        RecBack(stack);
+
+
+        if ( enableGraphics ) {
+            setChanged();
+            notifyObservers();
+        }
+
+        System.out.println("done");
+        //printMaze();
+
+
+    }
+
+    public void RecBack(Stack<Coord> stack) {
+
+        ArrayList<Direction> randDir;
+        Direction dir;
+        Coord peekCase;
+
+
+        if ( stack.isEmpty() )
+            return;
+
+        //We remove the wall piece at the current cell.
+        setCase( stack.peek(), 0);
+
+        //We explore in a new direction
+        randDir = Direction.randDirs();
+
+        for ( int i = 0; i < randDir.size(); i++) {
+
+            //If the direction is valid
+            dir = randDir.get(i);
+            peekCase = stack.peek().add(dir).add(dir);
+            if (peekCase.x > 0 && peekCase.x < width-1 && peekCase.y > 0 && peekCase.y < height-1
+                && getCase(peekCase) == 1) {
+
+                //We remove the wall on the middle case.
+                setCase(stack.peek().add(dir), 0);
+                //We push the new one.
+                stack.push(peekCase);
+                RecBack(stack);
+            }
+        }
+
+        //If no case in all direction are valid, we pop the current one.
+        stack.pop();
 
 
     }
@@ -192,6 +260,18 @@ public class Maze extends Observable {
     }
 
     public int getCase(int x, int y) { return maze[x][y]; }
+
+    public int getCase(Coord coor) {
+        return maze[coor.x][coor.y];
+    }
+
+    public void setCase(Coord coor, int val) {
+        maze[coor.x][coor.y] = val;
+    }
+
+    public void setCase(int x, int y, int val) {
+        maze[x][y] = val;
+    }
 
     public Coord getCentralPos() {
         return centralPos;
