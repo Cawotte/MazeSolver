@@ -11,6 +11,9 @@ public class Maze extends Observable {
 
     private Coord centralPos;
     private Coord playerPos;
+    private Coord startPos;
+    private Coord exitPos;
+
     private int[][] maze;
 
     /*
@@ -112,15 +115,33 @@ public class Maze extends Observable {
             for (int j = 0; j<this.width; j++)
                 maze[i][j] = 1;
 
-        //We choose a random starting point
-        int x = rand.nextInt(width-1)+1;
-        int y = rand.nextInt(height-1)+1;
-        Coord startPos = new Coord(x - (1 - x%2),y - ( 1 - y%2));
+        //We choose a random starting point for the generation
+        int x = rand.nextInt(width-2)+2;
+        int y = rand.nextInt(height-2)+2;
+        Coord rootPos = new Coord(x - (1 - x%2),y - ( 1 - y%2));
+
 
         Stack<Coord> stack = new Stack<>();
-
-        stack.push(startPos);
+        stack.push(rootPos);
         RecBack(stack);
+
+
+        //We determine an entry and an exit.
+        //entry
+        x = rand.nextInt(width-1);
+        x += (1 - x%2);
+        startPos = new Coord(x, 0);
+        setCase(startPos, 0);
+        //exit
+        x = rand.nextInt(width-1);
+        x += (1 - x%2);
+        exitPos = new Coord(x, height-1);
+        setCase(exitPos, 0);
+
+        playerPos = startPos.clone();
+        setCase(playerPos, 2);
+
+        System.out.println("done");
 
 
         if ( enableGraphics ) {
@@ -128,9 +149,7 @@ public class Maze extends Observable {
             notifyObservers();
         }
 
-        System.out.println("done");
         //printMaze();
-
 
     }
 
@@ -150,15 +169,16 @@ public class Maze extends Observable {
         //We explore in a new direction
         randDir = Direction.randDirs();
 
+        //For each possible direction chosen at random
         for ( int i = 0; i < randDir.size(); i++) {
 
-            //If the direction is valid
             dir = randDir.get(i);
+            //We look at the case two cells in the given direction.
             peekCase = stack.peek().add(dir).add(dir);
             if (peekCase.x > 0 && peekCase.x < width-1 && peekCase.y > 0 && peekCase.y < height-1
                 && getCase(peekCase) == 1) {
 
-                //We remove the wall on the middle case.
+                //We remove the wall on the middle case, we progress with jump of 2 cases to leave walls.
                 setCase(stack.peek().add(dir), 0);
                 //We push the new one.
                 stack.push(peekCase);
@@ -168,7 +188,6 @@ public class Maze extends Observable {
 
         //If no case in all direction are valid, we pop the current one.
         stack.pop();
-
 
     }
 
@@ -181,11 +200,9 @@ public class Maze extends Observable {
 
         Coord newPos = new Coord(playerPos.x + dir.x , playerPos.y + dir.y);
         //Check if the movement is possible
-        if ( newPos.x >= width || newPos.x < 0 || newPos.y >= height || newPos.y < 0) {
-            //We got out of the maze, endgame.
-            setChanged();
-            notifyObservers(true);
-            return true;
+
+        if ( newPos.x > width || newPos.x < 0 || newPos.y > height || newPos.y < 0) {
+            return false;
         }
 
         //if there's an obstacle, nada
@@ -199,6 +216,33 @@ public class Maze extends Observable {
         ArrayList<Coord> changedCases = new ArrayList<>();
         changedCases.add(playerPos); changedCases.add(newPos);
         playerPos = newPos;
+
+        if ( enableGraphics ) {
+            setChanged();
+            notifyObservers(changedCases);
+        }
+        if ( playerExited() ) {
+            setChanged();
+            notifyObservers(true);
+        }
+
+        return true;
+    }
+
+    public boolean moveAt(Coord pos) {
+
+        //Is movement legit ?
+        if ( pos.x > width || pos.x < 0 || pos.y > height || pos.y < 0
+            || getCase(pos) == 1)
+            return false;
+
+        //It's legit, let's move
+        maze[playerPos.x][playerPos.y] = 0;
+        maze[pos.x][pos.y] = 2;
+
+        ArrayList<Coord> changedCases = new ArrayList<>();
+        changedCases.add(playerPos); changedCases.add(pos);
+        playerPos = pos;
 
         if ( enableGraphics ) {
             setChanged();
@@ -250,7 +294,30 @@ public class Maze extends Observable {
             System.out.print("---");
         System.out.println("-");
 
+    }
 
+    public void resetMaze() {
+        maze[playerPos.x][playerPos.y] = 0;
+        maze[startPos.x][startPos.y] = 2;
+
+        ArrayList<Coord> changedCases = new ArrayList<>();
+        changedCases.add(playerPos); changedCases.add(startPos);
+        playerPos = startPos;
+
+        if ( enableGraphics ) {
+            setChanged();
+            notifyObservers(changedCases);
+        }
+    }
+
+    //Booleans
+
+    public boolean playerExited() {
+        return playerPos.equals(exitPos);
+    }
+
+    public static int rand(int a, int b) {
+        return new Random().nextInt(b-a) + a;
     }
 
     //Accesseurs
@@ -258,6 +325,7 @@ public class Maze extends Observable {
     public int[][] getMaze(){
         return maze;
     }
+
 
     public int getCase(int x, int y) { return maze[x][y]; }
 

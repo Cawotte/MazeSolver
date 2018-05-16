@@ -20,6 +20,10 @@ public class Coord {
         return new Coord(this.x + dir.x, this.y + dir.y);
     }
 
+    public Coord add(int x, int y) {
+        return new Coord(this.x + x, this.y + y);
+    }
+
     public static Coord randCoor(int xbound, int ybound) {
         Random rand = new Random();
         int x = rand.nextInt(xbound);
@@ -27,6 +31,14 @@ public class Coord {
         return new Coord(x,y);
     }
 
+    @Override
+    public Coord clone() {
+        return new Coord(x,y);
+    }
+
+    public boolean equals(Coord coor) {
+        return ( this.x == coor.x && this.y == coor.y);
+    }
 
     public int getX() {
         return x;

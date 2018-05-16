@@ -5,42 +5,51 @@ import java.util.Random;
 
 public class Automata {
 
-    private int[] possibleInput;
-    private int[] possibleOutput;
+    protected int nbInput;
+    protected int nbOutput;
 
-    private int[][] stateTable;
-    private int[][] actionTable;
+    protected short[][] stateTable;
+    protected short[][] actionTable;
+
     /*
         stateTable[currentState][input] = next state;
         actionTable[currentState][input] = action performed / output.
     */
 
-    private int initialState;
-    private int currentState;
+    protected int initialState;
+    protected int currentState;
 
     // Create a random automata with the given attributes.
-    public Automata(ArrayList<Integer> possibleInput, ArrayList<Integer> possibleOutput, int nbState) {
+    public Automata(int nbState, int nbInput, int nbOutput) {
+
+        this.nbInput = nbInput;
+        this.nbOutput = nbOutput;
 
         Random rand = new Random();
-        int random_index;
 
+        this.stateTable = new short[nbState][nbInput];
         for (int i = 0; i < nbState; i++ ) {
-            for (int j = 0; j < possibleInput.size(); j++) {
-
-                stateTable[i][j] = rand.nextInt(nbState)+1; //random value between 1 and nbState included.
-
+            for (int j = 0; j < nbInput; j++) {
+                stateTable[i][j] = (short)(rand.nextInt(nbState)+1); //random value between 1 and nbState included.
             }
         }
 
+        this.actionTable = new short[nbState][nbInput];
         for (int i = 0; i < nbState; i++ ) {
-            for (int j = 0; j < possibleInput.size(); j++) {
-
-                random_index = rand.nextInt(possibleOutput.size());
-                stateTable[i][j] = possibleOutput.get(random_index);
-
+            for (int j = 0; j < nbInput; j++) {
+                actionTable[i][j] = (short)(rand.nextInt(nbOutput)+1); //random value between 1 and nbState included.
             }
         }
 
+        initialState = rand.nextInt(nbState)+1;
+        currentState = initialState;
+
+    }
+
+    public int next(int input) {
+        int output = actionTable[currentState][input];
+        currentState = stateTable[currentState][input];
+        return output;
     }
 
 

@@ -3,7 +3,7 @@ package View;
 import Model.Coord;
 import Model.Direction;
 import Model.Maze;
-import ViewController.PopupFinPartie;
+import ViewController.Popup;
 import ViewController.MazeGrid;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -32,9 +32,9 @@ public class ViewMaze extends Application implements Observer {
     private int mazeViewWidth = 1100;
     private int mazeViewHeight = 700;
 
-    private int mazeSize = 41;
+    private int mazeSize = 6;
 
-    private PopupFinPartie popupFinPartie;
+    private Popup popup;
 
 
 
@@ -52,6 +52,7 @@ public class ViewMaze extends Application implements Observer {
     @Override
     public void start(Stage primaryStage){
 
+        mazeSize += (1 - mazeSize%2);
         maze = new Maze(mazeSize, mazeSize);
 
         //int rectangleSize = ( (mazeViewWidth+mazeViewHeight) / 2 ) / 30;
@@ -67,7 +68,7 @@ public class ViewMaze extends Application implements Observer {
 
         //------------------------------------------
         //----- POPUP VICTOIRE
-        popupFinPartie = new PopupFinPartie(primaryStage);
+        popup = new Popup(primaryStage);
 
 
         //-----------------------------------------
@@ -198,38 +199,18 @@ public class ViewMaze extends Application implements Observer {
 
                 ArrayList<Coord> coordToUpdate = (ArrayList<Coord>)arg;
                 for ( Coord pos : coordToUpdate ) {
-                    switch ( maze.getCase(pos.x,pos.y) ) {
-                        case 0:
-                            mazeView.getTab()[pos.x][pos.y].setFill(Color.WHITE);
-                            break;
-                        case 1:
-                            mazeView.getTab()[pos.x][pos.y].setFill(Color.RED);
-                            break;
-                        case 2:
-                            mazeView.getTab()[pos.x][pos.y].setFill(Color.BLUE);
-                            break;
-                    }
+                    colorCase(pos);
                 }
             }
             else if ( arg instanceof Boolean ) {
                 if ( (boolean) arg ) {
-                    popupFinPartie.setTextPopup("You got out of the maze !");
-                    popupFinPartie.afficherPopup();
+                    popup.setTextPopup("You got out of the maze !");
+                    popup.afficherPopup();
                 }
             }
             else if ( arg instanceof Coord ) {
                 Coord pos = (Coord)arg;
-                switch ( maze.getCase(pos.x,pos.y) ) {
-                    case 0:
-                        mazeView.getTab()[pos.x][pos.y].setFill(Color.WHITE);
-                        break;
-                    case 1:
-                        mazeView.getTab()[pos.x][pos.y].setFill(Color.RED);
-                        break;
-                    case 2:
-                        mazeView.getTab()[pos.x][pos.y].setFill(Color.BLUE);
-                        break;
-                }
+                colorCase(pos);
             }
 
             else {
@@ -237,18 +218,7 @@ public class ViewMaze extends Application implements Observer {
                 for (int i = 0; i < maze.getHeight(); i++ ) {
                     for (int j = 0; j < maze.getWidth(); j++) {
 
-                        switch ( maze.getCase(i,j) ) {
-                            case 0:
-                                mazeView.getTab()[i][j].setFill(Color.WHITE);
-                                break;
-                            case 1:
-                                mazeView.getTab()[i][j].setFill(Color.RED);
-                                break;
-                            case 2:
-                                mazeView.getTab()[i][j].setFill(Color.BLUE);
-                                break;
-                        }
-
+                        colorCase(new Coord(i,j));
                     }
                 }
 
@@ -257,7 +227,20 @@ public class ViewMaze extends Application implements Observer {
         }
 
 
+    }
 
+    public void colorCase(Coord pos) {
+        switch ( maze.getCase(pos.x,pos.y) ) {
+            case 0:
+                mazeView.getTab()[pos.x][pos.y].setFill(Color.WHITE);
+                break;
+            case 1:
+                mazeView.getTab()[pos.x][pos.y].setFill(Color.RED);
+                break;
+            case 2:
+                mazeView.getTab()[pos.x][pos.y].setFill(Color.BLUE);
+                break;
+        }
     }
 
     public static void main(String[] args) {

@@ -12,24 +12,24 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class PopupFinPartie extends Stage {
+public class Popup extends Stage {
 
     private VBox popupVBox;
     private Text textPopup;
     private Button btQuitter;
 
-    public PopupFinPartie(Stage primaryStage) {
+    public Popup(Stage primaryStage) {
 
 
         //Le contenu du Popup : Un message de victoire et un bouton pour quitter.
         popupVBox = new VBox();
 
         //Bouton pour quitter
-        btQuitter = new Button("Quitter le jeu");
+        btQuitter = new Button("Yeay !");
         btQuitter.setPadding(new Insets(10));
         btQuitter.setOnMouseClicked(event -> {
             close();
-            primaryStage.close();
+            //primaryStage.close();
         });
 
         //Message de Victoire
@@ -47,8 +47,10 @@ public class PopupFinPartie extends Stage {
 
         close();
         setScene(popupScene);
+
         //Cette ligne sert à rendre le stage un popup.
         initModality(Modality.APPLICATION_MODAL);
+
         setTitle("Bravo !");
         setOnCloseRequest(e -> Platform.exit());
 
