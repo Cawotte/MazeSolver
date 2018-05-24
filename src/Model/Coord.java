@@ -1,6 +1,7 @@
 package Model;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 
 public class Coord {
@@ -31,13 +32,32 @@ public class Coord {
         return new Coord(x,y);
     }
 
+    public String toString() {
+        return "(" + x + ", " + y + ")";
+    }
+
     @Override
     public Coord clone() {
         return new Coord(x,y);
     }
 
-    public boolean equals(Coord coor) {
+    /*public boolean equals(Coord coor) {
         return ( this.x == coor.x && this.y == coor.y);
+    }*/
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Coord coord = (Coord) o;
+        return x == coord.x &&
+                y == coord.y;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(x, y);
     }
 
     public int getX() {

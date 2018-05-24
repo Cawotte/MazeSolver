@@ -1,5 +1,6 @@
 package Model;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class Maze extends Observable {
@@ -15,6 +16,8 @@ public class Maze extends Observable {
     private Coord exitPos;
 
     private int[][] maze;
+
+    private int[][] stepCount;
 
     /*
         La valeur de la case défini son contenu
@@ -33,6 +36,7 @@ public class Maze extends Observable {
         this.playerPos = centralPos;
 
         initMaze();
+        //generateMazeRecBac();
 
     }
 
@@ -149,6 +153,14 @@ public class Maze extends Observable {
             notifyObservers();
         }
 
+        stepCount = new int[width][height];
+        for (int i = 0; i<this.height; i++)
+            for (int j = 0; j<this.width; j++)
+                stepCount[i][j] = 0;
+
+        System.out.println("Minimal number of move : " + minimalMove(startPos) );
+        System.out.println("exit pos " + exitPos.toString());
+        printTab(stepCount);
         //printMaze();
 
     }
@@ -192,6 +204,113 @@ public class Maze extends Observable {
     }
 
 
+    public int minimalMove(Coord pos, int useless) {
+
+        /*frontier = Queue()
+        frontier.put(start )
+        visited = {}
+        visited[start] = True
+
+        while not frontier.empty():
+           current = frontier.get()
+           for next in graph.neighbors(current):
+              if next not in visited:
+                 frontier.put(next)
+                 visited[next] = True
+         */
+
+        Coord currentPos;
+
+        LinkedList<Coord> frontier = new LinkedList<>();
+        frontier.add(startPos);
+        ArrayList<Coord> explored = new ArrayList<>();
+        explored.add(startPos);
+
+        while ( !frontier.isEmpty() ) {
+
+            currentPos = frontier.getFirst();
+
+            if ( currentPos.equals(exitPos) ) {
+                return 1;
+            }
+
+            for ( Coord adjPos : emptyNeighbors(currentPos) ) {
+                if ( !explored.contains(adjPos) ) {
+
+                }
+            }
+        }
+
+        return 1;
+    }
+
+    /**
+     * Return the minimal number of deplacement needed to complete the labyrinth
+     * @return
+     */
+    public int minimalMove(Coord pos) {
+
+
+        int nbStep = 0;
+        int minNbStep = -1;
+        Coord adjPos;
+
+        System.out.println(pos.toString() + " ");
+        if ( pos.equals(exitPos) ) {
+            System.out.println("\nexit!");
+            stepCount[pos.x][pos.y] = 1;
+            //System.out.println(" step:" + stepCount[pos.x][pos.y]);
+            return 0;
+        }
+
+        stepCount[pos.x][pos.y] = -1;
+
+        //For each direction
+        for ( Direction dir : Direction.directions() ) {
+
+            //We explore the case in this direction
+            adjPos = pos.add(dir);
+
+            //If it's inbound and the adj case is empty and it isn't explored yet
+            if ( inBound(adjPos) && getCase(adjPos) == 0 && stepCount[adjPos.x][adjPos.y] == 0) {
+
+
+                //We reiterate the algorithm toward this direction, removing the opposite dir to avoid infinite loops
+                nbStep = minimalMove( adjPos );
+
+
+                if ( ( nbStep != -1 && ( stepCount[pos.x][pos.y] <= 0 || nbStep + 1 < stepCount[pos.x][pos.y] ))) {
+                    //printTab(stepCount);
+                    //System.out.print(" replaced! ");
+                    stepCount[pos.x][pos.y] = nbStep + 1;
+                }
+
+            }
+
+        }
+
+
+        //printTab(stepCount);
+        //System.out.println(" step:" + stepCount[pos.x][pos.y]);
+        return stepCount[pos.x][pos.y];
+    }
+
+
+    public ArrayList<Coord> emptyNeighbors(Coord pos) {
+
+        ArrayList<Coord> neighbors = new ArrayList<>();
+        Coord adjPos;
+        for ( Direction dir : Direction.directions() ) {
+
+            adjPos = pos.add(dir);
+            if ( inBound(adjPos) && getCase(adjPos) == 0 ) {
+                neighbors.add(adjPos);
+            }
+
+        }
+
+        return neighbors;
+    }
     /**
      * Move the player/robot to the given direction. Return true if the move was possible and made, false otherwise.
      * @param dir Enum which is a couple of int determining the direction
@@ -296,6 +415,34 @@ public class Maze extends Observable {
 
     }
 
+    public void printTab(int[][] tab) {
+        //Ligne bordure au sommet.
+        System.out.print("  -");
+        for ( int i = 0; i < width; i++ )
+            System.out.print("---");
+        System.out.println("-");
+
+        for (int[] line : tab ) {
+            System.out.print("  |");
+            for (int j = 0; j < width; j++) {
+                if ( line[j] == 0 )
+                    System.out.print("   ");
+                else if ( line[j] == -1 )
+                    System.out.print(" X ");
+                else
+                    System.out.print(" " + line[j] + " ");
+
+            }
+            System.out.println("|");
+        }
+
+        //Ligne bordure au pied.
+        System.out.print("  -");
+        for ( int i = 0; i < width; i++ )
+            System.out.print("---");
+        System.out.println("-");
+    }
+
     public void resetMaze() {
         maze[playerPos.x][playerPos.y] = 0;
         maze[startPos.x][startPos.y] = 2;
@@ -308,6 +455,10 @@ public class Maze extends Observable {
             setChanged();
             notifyObservers(changedCases);
         }
+    }
+
+    public boolean inBound(Coord pos) {
+        return pos.x >= 0 && pos.y >= 0 && pos.x < width && pos.y < height;
     }
 
     //Booleans

@@ -1,4 +1,4 @@
-package Automata;
+package Model.Automata;
 
 import Model.Coord;
 import Model.Direction;
@@ -9,7 +9,7 @@ public class AutomataMaze extends Automata {
     Maze currentMaze;
 
     public AutomataMaze(int nbState) {
-        super(nbState, (int)Math.pow(2,8), 4);
+        super(nbState, (int)Math.pow(2,4), 4);
     }
 
     public AutomataMaze(int nbState, int nbInput, int nbOutput) {
@@ -19,7 +19,16 @@ public class AutomataMaze extends Automata {
     }
 
     //input / output processing.
-    public int input(Coord pos, Maze maze) {
+
+
+    /**
+     * Generate a binary value with the content of the 8 cases around the given pos in the given maze. The value is used as an input
+     * for automatas.
+     * @param pos
+     * @param maze
+     * @return
+     */
+    public int input8(Coord pos, Maze maze) {
 
         int width = maze.getWidth();
         int height = maze.getHeight();
@@ -34,7 +43,7 @@ public class AutomataMaze extends Automata {
                 adjPos = pos.add(i, j);
 
                 if ( adjPos.x >= 0 && adjPos.y >= 0 && adjPos.x < width && adjPos.y < height
-                && maze.getCase(adjPos) == 0 && !(adjPos.equals(pos)) )
+                        && maze.getCase(adjPos) == 0 && !(adjPos.equals(pos)) )
                     binaryInput++;
 
                 binaryInput = binaryInput << 1;
@@ -44,6 +53,45 @@ public class AutomataMaze extends Automata {
 
         return binaryInput;
     }
+
+    /**
+     * Generate a binary value with the content of the 8 cases around the given pos in the given maze. The value is used as an input
+     * for automatas.
+     * @param pos
+     * @param maze
+     * @return
+     */
+    public int input4(Coord pos, Maze maze) {
+
+        int width = maze.getWidth();
+        int height = maze.getHeight();
+
+        Coord adjPos;
+
+        int binaryInput = 0;
+
+        for ( int i = -1; i <= 1; i++) {
+            for ( int j = -1; j <= 1; j++) {
+
+                //if one and only one of the two value is equal to 0 (XOR)
+                //if it's a stricly vertical or horizontal direction
+                if ( i == 0 ^ j == 0 )  {
+                    adjPos = pos.add(i, j);
+                    //If the value are in-bound and it's not an obstacle
+                    if ( adjPos.x >= 0 && adjPos.y >= 0 && adjPos.x < width && adjPos.y < height
+                            && maze.getCase(adjPos) == 0 )
+                        binaryInput++;
+
+                    binaryInput = binaryInput << 1;
+
+                }
+
+            }
+        }
+
+        return binaryInput;
+    }
+
 
     public Direction output(int output) {
 
@@ -65,7 +113,7 @@ public class AutomataMaze extends Automata {
 
     public Direction next(Coord playerPos, Maze maze) {
 
-        int input = input(playerPos, maze);
+        int input = input4(playerPos, maze);
         return output( next(input) );
     }
 

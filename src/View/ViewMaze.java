@@ -3,6 +3,7 @@ package View;
 import Model.Coord;
 import Model.Direction;
 import Model.Maze;
+import View.UI.NumberButton;
 import ViewController.Popup;
 import ViewController.MazeGrid;
 import javafx.application.Application;
@@ -111,6 +112,9 @@ public class ViewMaze extends Application implements Observer {
         initMaze.setPadding(new Insets(10));
         vbox.setMargin(initMaze, new Insets(10, 5, 5, 40));
         vbox.getChildren().add(initMaze);
+
+        NumberButton nbButton = new NumberButton(8);
+        vbox.getChildren().add(nbButton);
 
         //Pour éviter d'avoir un changement de taille de la région lorsqu'on la changera avec la liste de joueurs.
         vbox.setMinWidth(200);

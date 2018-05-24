@@ -29,8 +29,11 @@ public enum Direction {
 
         ArrayList<Direction> randDir = new ArrayList<Direction>(Arrays.asList(UP, DOWN, LEFT, RIGHT));
         Collections.shuffle(randDir);
-
         return randDir;
+    }
+
+    public static ArrayList<Direction> directions() {
+        return new ArrayList<Direction>(Arrays.asList(UP, DOWN, LEFT, RIGHT));
     }
 
     /**
